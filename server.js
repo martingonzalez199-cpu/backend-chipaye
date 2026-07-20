@@ -50,9 +50,15 @@ app.post('/api/pedidos', async (req, res) => {
 // ACTUALIZAR PEDIDO (marcar como entregado/cobrado)
 app.put('/api/pedidos/:id', async (req, res) => {
   const id = parseInt(req.params.id);
-  const { delivered, paid } = req.body;
+  let { delivered, paid } = req.body;
 
-  console.log('\n🔵 PUT START: Actualizando pedido', id, 'con:', { delivered, paid });
+  // Convertir a booleanos si vienen como strings
+  delivered = delivered === true || delivered === 'true';
+  paid = paid === true || paid === 'true';
+
+  console.log('\n🔵 PUT START: Actualizando pedido', id);
+  console.log('   Valores:', { delivered, paid });
+  console.log('   Tipos:', { delivered: typeof delivered, paid: typeof paid });
 
   // ANTES de actualizar
   const { data: beforeData } = await supabase
