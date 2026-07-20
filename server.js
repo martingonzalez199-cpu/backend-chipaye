@@ -52,13 +52,18 @@ app.put('/api/pedidos/:id', async (req, res) => {
   const id = parseInt(req.params.id);
   let { delivered, paid } = req.body;
 
-  // Convertir a booleanos si vienen como strings
-  delivered = delivered === true || delivered === 'true';
-  paid = paid === true || paid === 'true';
+  // Construir payload solo con campos que se envíen
+  const updatePayload = {};
+  if (delivered !== undefined) {
+    updatePayload.delivered = delivered === true || delivered === 'true';
+  }
+  if (paid !== undefined) {
+    updatePayload.paid = paid === true || paid === 'true';
+  }
 
   console.log('\n🔵 PUT START: Actualizando pedido', id);
-  console.log('   Valores:', { delivered, paid });
-  console.log('   Tipos:', { delivered: typeof delivered, paid: typeof paid });
+  console.log('   Valores a actualizar:', updatePayload);
+  console.log('   Tipos:', { delivered: typeof updatePayload.delivered, paid: typeof updatePayload.paid });
 
   // ANTES de actualizar
   const { data: beforeData } = await supabase
@@ -72,7 +77,7 @@ app.put('/api/pedidos/:id', async (req, res) => {
   // ACTUALIZAR
   const { data: updateData, error: updateError } = await supabase
     .from('pedidos')
-    .update({ delivered, paid })
+    .update(updatePayload)
     .eq('id', id)
     .select('id, clientName, items, totalPrice, delivered, paid, createdAt')
     .single();
