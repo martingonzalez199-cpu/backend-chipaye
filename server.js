@@ -7,14 +7,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Desactivar caché para todas las respuestas
-app.use((req, res, next) => {
-  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-  res.set('Pragma', 'no-cache');
-  res.set('Expires', '0');
-  next();
-});
-
 // Conectar a Supabase
 const supabase = createClient(
   process.env.SUPABASE_URL,
