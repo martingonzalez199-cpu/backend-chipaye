@@ -30,10 +30,12 @@ app.post('/api/pedidos', async (req, res) => {
   const { data, error } = await supabase
     .from('pedidos')
     .insert([{ clientName, items, totalPrice }])
-    .select();
+    .select('*');
 
   if (error) return res.status(400).json({ error: error.message });
-  res.json(data[0]);
+  const result = data[0];
+  console.log('Pedido creado en BD:', result);
+  res.json(result);
 });
 
 // ACTUALIZAR PEDIDO (marcar como entregado/cobrado)
