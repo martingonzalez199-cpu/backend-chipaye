@@ -30,11 +30,20 @@ app.post('/api/pedidos', async (req, res) => {
   const { data, error } = await supabase
     .from('pedidos')
     .insert([{ clientName, items, totalPrice }])
-    .select('*');
+    .select();
 
-  if (error) return res.status(400).json({ error: error.message });
+  if (error) {
+    console.error('Error insertando pedido:', error);
+    return res.status(400).json({ error: error.message });
+  }
+
+  if (!data || data.length === 0) {
+    return res.status(400).json({ error: 'No data returned after insert' });
+  }
+
   const result = data[0];
-  console.log('Pedido creado en BD:', result);
+  console.log('Pedido completo retornado:', result);
+  console.log('ID:', result.id, 'Type:', typeof result.id);
   res.json(result);
 });
 
