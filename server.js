@@ -27,23 +27,23 @@ app.get('/api/pedidos', async (req, res) => {
 app.post('/api/pedidos', async (req, res) => {
   const { clientName, items, totalPrice } = req.body;
 
-  const { data, error } = await supabase
+  // Insertar y luego obtener todos los campos incluyendo id
+  const { data: insertData, error: insertError } = await supabase
     .from('pedidos')
     .insert([{ clientName, items, totalPrice }])
-    .select();
+    .select('id, clientName, items, totalPrice, delivered, paid, createdAt');
 
-  if (error) {
-    console.error('Error insertando pedido:', error);
-    return res.status(400).json({ error: error.message });
+  if (insertError) {
+    console.error('Error insertando:', insertError);
+    return res.status(400).json({ error: insertError.message });
   }
 
-  if (!data || data.length === 0) {
-    return res.status(400).json({ error: 'No data returned after insert' });
+  if (!insertData || insertData.length === 0) {
+    return res.status(400).json({ error: 'No se retornaron datos' });
   }
 
-  const result = data[0];
-  console.log('Pedido completo retornado:', result);
-  console.log('ID:', result.id, 'Type:', typeof result.id);
+  const result = insertData[0];
+  console.log('✅ Pedido creado con ID:', result.id);
   res.json(result);
 });
 
