@@ -52,39 +52,45 @@ app.put('/api/pedidos/:id', async (req, res) => {
   const id = parseInt(req.params.id);
   const { delivered, paid } = req.body;
 
-  console.log('\n🔵 PUT START: Actualizando pedido', id);
-  console.log('   Valores:', { delivered, paid });
-  console.log('   ID tipo:', typeof id);
+  console.log('\n🔵 PUT START: Actualizando pedido', id, 'con:', { delivered, paid });
 
-  // Primero, obtener el pedido antes de actualizar
+  // ANTES de actualizar
   const { data: beforeData } = await supabase
     .from('pedidos')
     .select('id, delivered, paid')
-    .eq('id', id);
+    .eq('id', id)
+    .single();
 
-  console.log('   ANTES de actualizar:', beforeData?.[0]);
+  console.log('   ANTES:', beforeData);
 
-  const { data, error } = await supabase
+  // ACTUALIZAR
+  const { data: updateData, error: updateError } = await supabase
     .from('pedidos')
     .update({ delivered, paid })
     .eq('id', id)
-    .select('id, clientName, items, totalPrice, delivered, paid, createdAt');
+    .select('id, clientName, items, totalPrice, delivered, paid, createdAt')
+    .single();
 
-  console.log('   Error de Supabase:', error?.message || 'ninguno');
-  console.log('   Data retornada:', data);
+  console.log('   Error al actualizar:', updateError?.message || 'ninguno');
+  console.log('   Datos retornados por UPDATE:', updateData);
 
-  if (error) {
-    console.error('❌ PUT: Error:', error.message);
-    return res.status(400).json({ error: error.message });
+  if (updateError) {
+    console.error('❌ Error:', updateError.message);
+    return res.status(400).json({ error: updateError.message });
   }
 
-  if (!data || data.length === 0) {
-    console.error('❌ PUT: No data returned');
-    return res.status(400).json({ error: 'No data returned' });
-  }
+  // VERIFICAR DESPUÉS de actualizar (hacer un SELECT adicional)
+  const { data: afterData } = await supabase
+    .from('pedidos')
+    .select('id, delivered, paid')
+    .eq('id', id)
+    .single();
 
-  console.log('✅ PUT END: Actualización exitosa:', data[0]);
-  res.json(data[0]);
+  console.log('   DESPUÉS:', afterData);
+  console.log('   ¿Se guardó? ANTES:', beforeData?.delivered, '→ DESPUÉS:', afterData?.delivered);
+
+  console.log('✅ PUT END: Retornando:', updateData);
+  res.json(updateData);
 });
 
 // BORRAR PEDIDO
