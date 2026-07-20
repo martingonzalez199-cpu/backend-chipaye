@@ -52,7 +52,17 @@ app.put('/api/pedidos/:id', async (req, res) => {
   const id = parseInt(req.params.id);
   const { delivered, paid } = req.body;
 
-  console.log('PUT: Actualizando pedido', id, 'con:', { delivered, paid });
+  console.log('\n🔵 PUT START: Actualizando pedido', id);
+  console.log('   Valores:', { delivered, paid });
+  console.log('   ID tipo:', typeof id);
+
+  // Primero, obtener el pedido antes de actualizar
+  const { data: beforeData } = await supabase
+    .from('pedidos')
+    .select('id, delivered, paid')
+    .eq('id', id);
+
+  console.log('   ANTES de actualizar:', beforeData?.[0]);
 
   const { data, error } = await supabase
     .from('pedidos')
@@ -60,17 +70,20 @@ app.put('/api/pedidos/:id', async (req, res) => {
     .eq('id', id)
     .select('id, clientName, items, totalPrice, delivered, paid, createdAt');
 
+  console.log('   Error de Supabase:', error?.message || 'ninguno');
+  console.log('   Data retornada:', data);
+
   if (error) {
-    console.error('PUT: Error:', error.message);
+    console.error('❌ PUT: Error:', error.message);
     return res.status(400).json({ error: error.message });
   }
 
   if (!data || data.length === 0) {
-    console.error('PUT: No data returned after update');
+    console.error('❌ PUT: No data returned');
     return res.status(400).json({ error: 'No data returned' });
   }
 
-  console.log('✅ PUT: Pedido actualizado:', data[0]);
+  console.log('✅ PUT END: Actualización exitosa:', data[0]);
   res.json(data[0]);
 });
 
