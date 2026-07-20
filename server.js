@@ -49,16 +49,28 @@ app.post('/api/pedidos', async (req, res) => {
 
 // ACTUALIZAR PEDIDO (marcar como entregado/cobrado)
 app.put('/api/pedidos/:id', async (req, res) => {
-  const { id } = req.params;
+  const id = parseInt(req.params.id);
   const { delivered, paid } = req.body;
+
+  console.log('PUT: Actualizando pedido', id, 'con:', { delivered, paid });
 
   const { data, error } = await supabase
     .from('pedidos')
     .update({ delivered, paid })
     .eq('id', id)
-    .select();
+    .select('id, clientName, items, totalPrice, delivered, paid, createdAt');
 
-  if (error) return res.status(400).json({ error: error.message });
+  if (error) {
+    console.error('PUT: Error:', error.message);
+    return res.status(400).json({ error: error.message });
+  }
+
+  if (!data || data.length === 0) {
+    console.error('PUT: No data returned after update');
+    return res.status(400).json({ error: 'No data returned' });
+  }
+
+  console.log('✅ PUT: Pedido actualizado:', data[0]);
   res.json(data[0]);
 });
 
