@@ -15,6 +15,11 @@ const supabase = createClient(
 
 // OBTENER TODOS LOS PEDIDOS
 app.get('/api/pedidos', async (req, res) => {
+  // Desactivar caché para datos en tiempo real
+  res.set('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+
   const { data, error } = await supabase
     .from('pedidos')
     .select('*');
